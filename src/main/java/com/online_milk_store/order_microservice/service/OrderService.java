@@ -19,6 +19,7 @@ import com.online_milk_store.order_microservice.entity.MilkBrandInventoryEntity;
 import com.online_milk_store.order_microservice.entity.MilkBrandSellEntity;
 import com.online_milk_store.order_microservice.repository.MilkBrandInventoryRepository;
 import com.online_milk_store.order_microservice.repository.MilkBrandSellRepository;
+import com.online_milk_store.order_microservice.util.Util;
 
 @Service
 @Transactional
@@ -30,6 +31,9 @@ public class OrderService {
 
 	@Autowired
 	private MilkBrandInventoryRepository milkBrandInventoryRepository;
+
+	@Autowired
+	private Util util;
 
 	public void processOrder(Order order) {
 		LOGGER.debug("OrderService.processOrder() --- START");
@@ -52,6 +56,7 @@ public class OrderService {
                 milkBrandInventoryEntity -> milkBrandInventoryEntity.getMilkBrandEntity().getMilkBrandId(),
                 milkBrandInventoryEntity -> milkBrandInventoryEntity
                 ));
+		String orderNumber = util.generateOrderNumber();
 		List<MilkBrandSellEntity> listMilkBrandSellEntitiesToSave = mapProductIdQuantity.entrySet().stream()
 				.map(entryProductIdQuantity ->
 					MilkBrandSellEntity.builder()
@@ -60,6 +65,7 @@ public class OrderService {
 						.totalSellPrice(entryProductIdQuantity.getValue() * mapMilkBrandIdMilkBrandInventoryEntity.get(entryProductIdQuantity.getKey()).getCurrentSellPrice())
 						.milkBrandEntity(mapMilkBrandIdMilkBrandInventoryEntity.get(entryProductIdQuantity.getKey()).getMilkBrandEntity())
 						.sellDateTime(new Timestamp(System.currentTimeMillis()))
+						.orderNumber(orderNumber)
 						.build())
 				.toList();
 		List<MilkBrandSellEntity> listMilkBrandSellEntitiesToSaved = milkBrandSellRepository.saveAll(listMilkBrandSellEntitiesToSave);
