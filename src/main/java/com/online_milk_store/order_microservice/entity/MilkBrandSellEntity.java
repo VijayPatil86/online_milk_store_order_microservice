@@ -38,6 +38,9 @@ public class MilkBrandSellEntity {
 	@Column(name = "SELL_TIMESTAMP")
 	private Timestamp sellDateTime;
 
+	@Column(name = "ORDER_NUMBER")
+	private String orderNumber;
+
 	@ManyToOne
 	@JoinColumn(name = "MILK_BRAND_ID")
 	private MilkBrandEntity milkBrandEntity;
