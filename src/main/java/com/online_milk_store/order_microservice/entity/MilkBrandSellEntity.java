@@ -44,4 +44,8 @@ public class MilkBrandSellEntity {
 	@ManyToOne
 	@JoinColumn(name = "MILK_BRAND_ID")
 	private MilkBrandEntity milkBrandEntity;
+
+	@ManyToOne
+	@JoinColumn(name = "UPI_RECORD_ID")
+	private UPIDetailsEntity upiDetailsEntity;
 }
