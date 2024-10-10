@@ -41,6 +41,9 @@ public class MilkBrandSellEntity {
 	@Column(name = "ORDER_NUMBER")
 	private String orderNumber;
 
+	@Column(name = "REMARK")
+	private String remark;
+
 	@ManyToOne
 	@JoinColumn(name = "MILK_BRAND_ID")
 	private MilkBrandEntity milkBrandEntity;
