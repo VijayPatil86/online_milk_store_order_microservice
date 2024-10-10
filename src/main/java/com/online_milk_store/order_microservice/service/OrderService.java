@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 
@@ -15,10 +16,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.online_milk_store.order_microservice.bean.Order;
+import com.online_milk_store.order_microservice.bean.UPIPaymentMethod;
 import com.online_milk_store.order_microservice.entity.MilkBrandInventoryEntity;
 import com.online_milk_store.order_microservice.entity.MilkBrandSellEntity;
+import com.online_milk_store.order_microservice.entity.UPIDetailsEntity;
 import com.online_milk_store.order_microservice.repository.MilkBrandInventoryRepository;
 import com.online_milk_store.order_microservice.repository.MilkBrandSellRepository;
+import com.online_milk_store.order_microservice.repository.UPIDetailRepository;
 import com.online_milk_store.order_microservice.util.Util;
 
 @Service
@@ -33,11 +37,23 @@ public class OrderService {
 	private MilkBrandInventoryRepository milkBrandInventoryRepository;
 
 	@Autowired
+	private UPIDetailRepository upiDetailRepository;
+
+	@Autowired
 	private Util util;
 
 	public void processOrder(Order order) {
 		LOGGER.debug("OrderService.processOrder() --- START");
 		LOGGER.info("OrderService.processOrder() --- order: " + order);	// Order [productIdQty=21=2&22=4, paymentDetails=PaymentDetails [paymentMethod=UPIPaymentMethod [upiID=acc@hdfc, paymentDescription=buy milk piuch]]]
+
+		String upiId = ((UPIPaymentMethod)(order.getPaymentDetails().getPaymentMethod())).getUpiID();
+		String remark = ((UPIPaymentMethod)(order.getPaymentDetails().getPaymentMethod())).getPaymentDescription();
+		Optional<UPIDetailsEntity> optionalUPIDetailsEntity = upiDetailRepository.findByUpiId(upiId);
+		UPIDetailsEntity upiDetailsEntitySaved = optionalUPIDetailsEntity.orElseGet(() -> upiDetailRepository
+				.save(UPIDetailsEntity.builder()
+						.upiId(upiId)
+						.build()));
+
 		Map<Integer, Integer> mapProductIdQuantity = new HashMap<>();
 		StringTokenizer tokenizer = new StringTokenizer(order.getProductIdQty(), "&");
 		while(tokenizer.hasMoreTokens()) {
