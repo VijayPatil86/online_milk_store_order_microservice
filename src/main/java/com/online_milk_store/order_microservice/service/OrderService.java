@@ -45,16 +45,28 @@ public class OrderService {
 	public void processOrder(Order order) {
 		LOGGER.debug("OrderService.processOrder() --- START");
 		LOGGER.info("OrderService.processOrder() --- order: " + order);	// Order [productIdQty=21=2&22=4, paymentDetails=PaymentDetails [paymentMethod=UPIPaymentMethod [upiID=acc@hdfc, paymentDescription=buy milk piuch]]]
+		UPIDetailsEntity upiDetailsEntitySaved = getOrSaveUPIDetailsEntity(order);
+		Map<Integer, Integer> mapProductIdQuantity = new HashMap<>();
+		List<MilkBrandInventoryEntity> listMilkBrandInventoryEntities = getMilkBrandIdsForOrder(order, mapProductIdQuantity);
+		saveMilkOrder(listMilkBrandInventoryEntities, mapProductIdQuantity, upiDetailsEntitySaved, order);
+		LOGGER.debug("OrderService.processOrder() --- END");
+	}
 
+	private UPIDetailsEntity getOrSaveUPIDetailsEntity(Order order) {
+		LOGGER.debug("OrderService.getOrSaveUPIDetailsEntity() --- START");
 		String upiId = ((UPIPaymentMethod)(order.getPaymentDetails().getPaymentMethod())).getUpiID();
-		String remark = ((UPIPaymentMethod)(order.getPaymentDetails().getPaymentMethod())).getPaymentDescription();
 		Optional<UPIDetailsEntity> optionalUPIDetailsEntity = upiDetailRepository.findByUpiId(upiId);
 		UPIDetailsEntity upiDetailsEntitySaved = optionalUPIDetailsEntity.orElseGet(() -> upiDetailRepository
 				.save(UPIDetailsEntity.builder()
 						.upiId(upiId)
 						.build()));
+		LOGGER.debug("OrderService.getOrSaveUPIDetailsEntity() --- END");
+		return upiDetailsEntitySaved;
+	}
 
-		Map<Integer, Integer> mapProductIdQuantity = new HashMap<>();
+	private List<MilkBrandInventoryEntity> getMilkBrandIdsForOrder(Order order, Map<Integer, Integer> mapProductIdQuantity) {
+		LOGGER.debug("OrderService.getMilkBrandIds() --- START");
+		LOGGER.info("OrderService.getMilkBrandIds() --- order: " + order);
 		StringTokenizer tokenizer = new StringTokenizer(order.getProductIdQty(), "&");
 		while(tokenizer.hasMoreTokens()) {
 			String pairProductIdQuantity = tokenizer.nextToken();
@@ -67,6 +79,15 @@ public class OrderService {
 		}
 		List<MilkBrandInventoryEntity> listMilkBrandInventoryEntities =
 				milkBrandInventoryRepository.findByMilkBrandEntityMilkBrandIdIn(new ArrayList<>(mapProductIdQuantity.keySet()));
+		LOGGER.debug("OrderService.getMilkBrandIds() --- END");
+		return listMilkBrandInventoryEntities;
+	}
+
+	private void saveMilkOrder(List<MilkBrandInventoryEntity> listMilkBrandInventoryEntities,
+			Map<Integer, Integer> mapProductIdQuantity, UPIDetailsEntity upiDetailsEntitySaved,
+			Order order) {
+		LOGGER.debug("OrderService.saveMilkOrder() --- START");
+		String remark = ((UPIPaymentMethod)(order.getPaymentDetails().getPaymentMethod())).getPaymentDescription();
 		Map<Integer, MilkBrandInventoryEntity> mapMilkBrandIdMilkBrandInventoryEntity = listMilkBrandInventoryEntities.stream()
                 .collect(Collectors.toMap(
                 milkBrandInventoryEntity -> milkBrandInventoryEntity.getMilkBrandEntity().getMilkBrandId(),
@@ -82,9 +103,11 @@ public class OrderService {
 						.milkBrandEntity(mapMilkBrandIdMilkBrandInventoryEntity.get(entryProductIdQuantity.getKey()).getMilkBrandEntity())
 						.sellDateTime(new Timestamp(System.currentTimeMillis()))
 						.orderNumber(orderNumber)
+						.remark(remark)
+						.upiDetailsEntity(upiDetailsEntitySaved)
 						.build())
 				.toList();
 		List<MilkBrandSellEntity> listMilkBrandSellEntitiesToSaved = milkBrandSellRepository.saveAll(listMilkBrandSellEntitiesToSave);
-		LOGGER.debug("OrderService.processOrder() --- END");
+		LOGGER.debug("OrderService.saveMilkOrder() --- END");
 	}
 }
