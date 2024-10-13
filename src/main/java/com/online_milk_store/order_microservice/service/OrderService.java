@@ -103,8 +103,6 @@ public class OrderService {
 						.milkBrandEntity(mapMilkBrandIdMilkBrandInventoryEntity.get(entryProductIdQuantity.getKey()).getMilkBrandEntity())
 						.sellDateTime(new Timestamp(System.currentTimeMillis()))
 						.orderNumber(orderNumber)
-						.remark(remark)
-						.upiDetailsEntity(upiDetailsEntitySaved)
 						.build())
 				.toList();
 		List<MilkBrandSellEntity> listMilkBrandSellEntitiesToSaved = milkBrandSellRepository.saveAll(listMilkBrandSellEntitiesToSave);
