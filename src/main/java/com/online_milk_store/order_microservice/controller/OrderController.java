@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.online_milk_store.order_microservice.bean.Order;
+import com.online_milk_store.order_microservice.bean.OrderBean;
 import com.online_milk_store.order_microservice.feign_client.InventoryServiceClient;
 import com.online_milk_store.order_microservice.service.OrderService;
 
@@ -28,10 +28,10 @@ public class OrderController {
 	private OrderService orderService;
 
 	@PostMapping
-	public ResponseEntity<String> processOrder(@RequestBody Order order) {
+	public ResponseEntity<String> processOrder(@RequestBody OrderBean orderBean) {
 		LOGGER.debug("OrderController.processOrder() --- START");
-		LOGGER.info("OrderController.processOrder() --- order: " + order);	// Order [productIdQty=21=2&22=4, paymentDetails=PaymentDetails [paymentMethod=UPIPaymentMethod [upiID=acc@hdfc, paymentDescription=buy milk piuch]]]
-		orderService.processOrder(order);
+		LOGGER.info("OrderController.processOrder() --- orderBean: " + orderBean);	// Order [productIdQty=21=2&22=4, paymentDetails=PaymentDetails [paymentMethod=UPIPaymentMethod [upiID=acc@hdfc, paymentDescription=buy milk piuch]]]
+		orderService.processOrder(orderBean);
 		LOGGER.debug("OrderController.processOrder() --- END");
 		return new ResponseEntity<>("Order processed...", HttpStatus.OK);
 	}
