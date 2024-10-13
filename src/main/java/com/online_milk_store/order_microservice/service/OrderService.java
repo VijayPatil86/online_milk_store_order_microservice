@@ -11,15 +11,19 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.online_milk_store.order_microservice.bean.BusinessProperties;
 import com.online_milk_store.order_microservice.bean.OrderBean;
+import com.online_milk_store.order_microservice.bean.UPIPaymentMethodBean;
+import com.online_milk_store.order_microservice.bean.UPIPaymentTransactionBean;
 import com.online_milk_store.order_microservice.entity.MilkBrandInventoryEntity;
 import com.online_milk_store.order_microservice.entity.MilkBrandSellEntity;
+import com.online_milk_store.order_microservice.feign_client.PaymentServiceClient;
 import com.online_milk_store.order_microservice.repository.MilkBrandInventoryRepository;
 import com.online_milk_store.order_microservice.repository.MilkBrandSellRepository;
-import com.online_milk_store.order_microservice.repository.UPIDetailRepository;
 import com.online_milk_store.order_microservice.util.Util;
 
 @Service
@@ -33,33 +37,23 @@ public class OrderService {
 	@Autowired
 	private MilkBrandInventoryRepository milkBrandInventoryRepository;
 
-	//@Autowired
-	//private UPIDetailRepository upiDetailRepository;
+	@Autowired
+	private PaymentServiceClient paymentServiceClient;
 
 	@Autowired
 	private Util util;
 
+	@Autowired
+	private BusinessProperties businessProperties;
+
 	public void processOrder(OrderBean orderBean) {
 		LOGGER.debug("OrderService.processOrder() --- START");
 		LOGGER.info("OrderService.processOrder() --- orderBean: " + orderBean);	// Order [productIdQty=21=2&22=4, paymentDetails=PaymentDetails [paymentMethod=UPIPaymentMethod [upiID=acc@hdfc, paymentDescription=buy milk piuch]]]
-		//UPIDetailsEntity upiDetailsEntitySaved = getOrSaveUPIDetailsEntity(orderBean);
 		Map<Integer, Integer> mapProductIdQuantity = new HashMap<>();
 		List<MilkBrandInventoryEntity> listMilkBrandInventoryEntities = getMilkBrandIdsForOrder(orderBean, mapProductIdQuantity);
 		saveMilkOrder(listMilkBrandInventoryEntities, mapProductIdQuantity, orderBean);
 		LOGGER.debug("OrderService.processOrder() --- END");
 	}
-
-	/*private UPIDetailsEntity getOrSaveUPIDetailsEntity(OrderBean order) {
-		LOGGER.debug("OrderService.getOrSaveUPIDetailsEntity() --- START");
-		String upiId = ((UPIPaymentMethodBean)(order.getPaymentDetailsBean().getPaymentMethodBean())).getUpiID();
-		Optional<UPIDetailsEntity> optionalUPIDetailsEntity = upiDetailRepository.findByUpiId(upiId);
-		UPIDetailsEntity upiDetailsEntitySaved = optionalUPIDetailsEntity.orElseGet(() -> upiDetailRepository
-				.save(UPIDetailsEntity.builder()
-						.upiId(upiId)
-						.build()));
-		LOGGER.debug("OrderService.getOrSaveUPIDetailsEntity() --- END");
-		return upiDetailsEntitySaved;
-	}*/
 
 	private List<MilkBrandInventoryEntity> getMilkBrandIdsForOrder(OrderBean order, Map<Integer, Integer> mapProductIdQuantity) {
 		LOGGER.debug("OrderService.getMilkBrandIds() --- START");
@@ -101,6 +95,14 @@ public class OrderService {
 						.build())
 				.toList();
 		List<MilkBrandSellEntity> listMilkBrandSellEntitiesToSaved = milkBrandSellRepository.saveAll(listMilkBrandSellEntitiesToSave);
+		UPIPaymentTransactionBean upiPaymentTransactionBean = UPIPaymentTransactionBean.builder()
+				.orderNumber(orderNumber)
+				.upiPaymentMethod(businessProperties.getUpiPaymentMethodName())
+				.upiPaymentStatus(businessProperties.getUpiPaymentTransactionInitialStatus())
+				.upiId(((UPIPaymentMethodBean)(orderBean.getPaymentDetails().getPaymentMethod())).getUpiID())
+				.upiPaymentRemark(((UPIPaymentMethodBean)(orderBean.getPaymentDetails().getPaymentMethod())).getPaymentDescription())
+				.build();
+		ResponseEntity<Void> responseEntity = paymentServiceClient.processUPIPayment(upiPaymentTransactionBean);
 		LOGGER.debug("OrderService.saveMilkOrder() --- END");
 	}
 }
