@@ -8,10 +8,10 @@ import lombok.Setter;
 
 @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
 public class PaymentDetailsBean {
-	PaymentMethodBean paymentMethodBean;
+	private PaymentMethodBean paymentMethod;
 
 	@Override
 	public String toString() {
-		return "PaymentDetails [paymentMethodBean=" + paymentMethodBean + "]";
+		return "PaymentDetails [paymentMethodBean=" + paymentMethod + "]";
 	}
 }
