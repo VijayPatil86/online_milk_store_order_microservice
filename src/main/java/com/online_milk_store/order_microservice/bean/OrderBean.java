@@ -9,10 +9,10 @@ import lombok.Setter;
 @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
 public class OrderBean {
 	private String productIdQty;	// 21=1&22=2
-	private PaymentDetailsBean paymentDetailsBean;
+	private PaymentDetailsBean paymentDetails;
 
 	@Override
 	public String toString() {
-		return "Order [productIdQty=" + productIdQty + ", paymentDetailsBean=" + paymentDetailsBean + "]";
+		return "Order [productIdQty=" + productIdQty + ", paymentDetailsBean=" + paymentDetails + "]";
 	}
 }
