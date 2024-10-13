@@ -9,7 +9,7 @@ import lombok.Setter;
 @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
 public class UPIPaymentMethodBean extends PaymentMethodBean {
 	private String upiID;
-	String paymentDescription;
+	private String paymentDescription;
 
 	@Override
 	public String toString() {
