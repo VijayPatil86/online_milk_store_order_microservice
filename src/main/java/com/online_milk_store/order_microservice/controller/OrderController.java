@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.online_milk_store.order_microservice.bean.OrderBean;
-import com.online_milk_store.order_microservice.feign_client.InventoryServiceClient;
 import com.online_milk_store.order_microservice.service.OrderService;
 
 @CrossOrigin
@@ -20,9 +19,6 @@ import com.online_milk_store.order_microservice.service.OrderService;
 @RequestMapping("/order-service/order")
 public class OrderController {
 	static final private Logger LOGGER = LogManager.getLogger(OrderController.class);
-
-	@Autowired
-	private InventoryServiceClient inventoryServiceClient;
 
 	@Autowired
 	private OrderService orderService;
