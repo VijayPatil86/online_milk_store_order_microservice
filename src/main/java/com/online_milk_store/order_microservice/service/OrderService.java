@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 
@@ -15,11 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.online_milk_store.order_microservice.bean.Order;
-import com.online_milk_store.order_microservice.bean.UPIPaymentMethod;
+import com.online_milk_store.order_microservice.bean.OrderBean;
 import com.online_milk_store.order_microservice.entity.MilkBrandInventoryEntity;
 import com.online_milk_store.order_microservice.entity.MilkBrandSellEntity;
-import com.online_milk_store.order_microservice.entity.UPIDetailsEntity;
 import com.online_milk_store.order_microservice.repository.MilkBrandInventoryRepository;
 import com.online_milk_store.order_microservice.repository.MilkBrandSellRepository;
 import com.online_milk_store.order_microservice.repository.UPIDetailRepository;
@@ -36,25 +33,25 @@ public class OrderService {
 	@Autowired
 	private MilkBrandInventoryRepository milkBrandInventoryRepository;
 
-	@Autowired
-	private UPIDetailRepository upiDetailRepository;
+	//@Autowired
+	//private UPIDetailRepository upiDetailRepository;
 
 	@Autowired
 	private Util util;
 
-	public void processOrder(Order order) {
+	public void processOrder(OrderBean orderBean) {
 		LOGGER.debug("OrderService.processOrder() --- START");
-		LOGGER.info("OrderService.processOrder() --- order: " + order);	// Order [productIdQty=21=2&22=4, paymentDetails=PaymentDetails [paymentMethod=UPIPaymentMethod [upiID=acc@hdfc, paymentDescription=buy milk piuch]]]
-		UPIDetailsEntity upiDetailsEntitySaved = getOrSaveUPIDetailsEntity(order);
+		LOGGER.info("OrderService.processOrder() --- orderBean: " + orderBean);	// Order [productIdQty=21=2&22=4, paymentDetails=PaymentDetails [paymentMethod=UPIPaymentMethod [upiID=acc@hdfc, paymentDescription=buy milk piuch]]]
+		//UPIDetailsEntity upiDetailsEntitySaved = getOrSaveUPIDetailsEntity(orderBean);
 		Map<Integer, Integer> mapProductIdQuantity = new HashMap<>();
-		List<MilkBrandInventoryEntity> listMilkBrandInventoryEntities = getMilkBrandIdsForOrder(order, mapProductIdQuantity);
-		saveMilkOrder(listMilkBrandInventoryEntities, mapProductIdQuantity, upiDetailsEntitySaved, order);
+		List<MilkBrandInventoryEntity> listMilkBrandInventoryEntities = getMilkBrandIdsForOrder(orderBean, mapProductIdQuantity);
+		saveMilkOrder(listMilkBrandInventoryEntities, mapProductIdQuantity, orderBean);
 		LOGGER.debug("OrderService.processOrder() --- END");
 	}
 
-	private UPIDetailsEntity getOrSaveUPIDetailsEntity(Order order) {
+	/*private UPIDetailsEntity getOrSaveUPIDetailsEntity(OrderBean order) {
 		LOGGER.debug("OrderService.getOrSaveUPIDetailsEntity() --- START");
-		String upiId = ((UPIPaymentMethod)(order.getPaymentDetails().getPaymentMethod())).getUpiID();
+		String upiId = ((UPIPaymentMethodBean)(order.getPaymentDetailsBean().getPaymentMethodBean())).getUpiID();
 		Optional<UPIDetailsEntity> optionalUPIDetailsEntity = upiDetailRepository.findByUpiId(upiId);
 		UPIDetailsEntity upiDetailsEntitySaved = optionalUPIDetailsEntity.orElseGet(() -> upiDetailRepository
 				.save(UPIDetailsEntity.builder()
@@ -62,9 +59,9 @@ public class OrderService {
 						.build()));
 		LOGGER.debug("OrderService.getOrSaveUPIDetailsEntity() --- END");
 		return upiDetailsEntitySaved;
-	}
+	}*/
 
-	private List<MilkBrandInventoryEntity> getMilkBrandIdsForOrder(Order order, Map<Integer, Integer> mapProductIdQuantity) {
+	private List<MilkBrandInventoryEntity> getMilkBrandIdsForOrder(OrderBean order, Map<Integer, Integer> mapProductIdQuantity) {
 		LOGGER.debug("OrderService.getMilkBrandIds() --- START");
 		LOGGER.info("OrderService.getMilkBrandIds() --- order: " + order);
 		StringTokenizer tokenizer = new StringTokenizer(order.getProductIdQty(), "&");
@@ -84,10 +81,8 @@ public class OrderService {
 	}
 
 	private void saveMilkOrder(List<MilkBrandInventoryEntity> listMilkBrandInventoryEntities,
-			Map<Integer, Integer> mapProductIdQuantity, UPIDetailsEntity upiDetailsEntitySaved,
-			Order order) {
+			Map<Integer, Integer> mapProductIdQuantity, OrderBean orderBean) {
 		LOGGER.debug("OrderService.saveMilkOrder() --- START");
-		String remark = ((UPIPaymentMethod)(order.getPaymentDetails().getPaymentMethod())).getPaymentDescription();
 		Map<Integer, MilkBrandInventoryEntity> mapMilkBrandIdMilkBrandInventoryEntity = listMilkBrandInventoryEntities.stream()
                 .collect(Collectors.toMap(
                 milkBrandInventoryEntity -> milkBrandInventoryEntity.getMilkBrandEntity().getMilkBrandId(),
