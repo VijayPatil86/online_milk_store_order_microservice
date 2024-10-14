@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
@@ -83,16 +84,20 @@ public class OrderService {
                 milkBrandInventoryEntity -> milkBrandInventoryEntity
                 ));
 		String orderNumber = util.generateOrderNumber();
+		AtomicReference<Float> orderPaymentAmount = new AtomicReference<>(0f);
 		List<MilkBrandSellEntity> listMilkBrandSellEntitiesToSave = mapProductIdQuantity.entrySet().stream()
-				.map(entryProductIdQuantity ->
-					MilkBrandSellEntity.builder()
+				.map(entryProductIdQuantity -> {
+					int quantity = entryProductIdQuantity.getValue();
+					float currentSellPrice = mapMilkBrandIdMilkBrandInventoryEntity.get(entryProductIdQuantity.getKey()).getCurrentSellPrice();
+					orderPaymentAmount.updateAndGet(amount -> amount + (quantity * currentSellPrice));
+					return MilkBrandSellEntity.builder()
 						.sellPrice(mapMilkBrandIdMilkBrandInventoryEntity.get(entryProductIdQuantity.getKey()).getCurrentSellPrice())
 						.sellQuantity(entryProductIdQuantity.getValue())
-						.totalSellPrice(entryProductIdQuantity.getValue() * mapMilkBrandIdMilkBrandInventoryEntity.get(entryProductIdQuantity.getKey()).getCurrentSellPrice())
+						.totalSellPrice(quantity * currentSellPrice)
 						.milkBrandEntity(mapMilkBrandIdMilkBrandInventoryEntity.get(entryProductIdQuantity.getKey()).getMilkBrandEntity())
 						.sellDateTime(new Timestamp(System.currentTimeMillis()))
 						.orderNumber(orderNumber)
-						.build())
+						.build();})
 				.toList();
 		List<MilkBrandSellEntity> listMilkBrandSellEntitiesToSaved = milkBrandSellRepository.saveAll(listMilkBrandSellEntitiesToSave);
 		UPIPaymentTransactionBean upiPaymentTransactionBean = UPIPaymentTransactionBean.builder()
@@ -100,6 +105,7 @@ public class OrderService {
 				.upiPaymentMethod(businessProperties.getUpiPaymentMethodName())
 				.upiPaymentStatus(businessProperties.getUpiPaymentTransactionInitialStatus())
 				.upiId(((UPIPaymentMethodBean)(orderBean.getPaymentDetails().getPaymentMethod())).getUpiID())
+				.upiPaymentAmount(orderPaymentAmount.get())
 				.upiPaymentRemark(((UPIPaymentMethodBean)(orderBean.getPaymentDetails().getPaymentMethod())).getPaymentDescription())
 				.build();
 		ResponseEntity<Void> responseEntity = paymentServiceClient.processUPIPayment(upiPaymentTransactionBean);
