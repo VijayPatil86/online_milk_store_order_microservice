@@ -12,6 +12,7 @@ public class UPIPaymentTransactionBean {
 	private String orderNumber;
 	private String upiId;
 	private String upiPaymentMethod;
+	private float upiPaymentAmount;
 	private String upiPaymentStatus;
 	private String upiPaymentRemark;
 }
