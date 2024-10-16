@@ -42,7 +42,7 @@ public class OrderService {
 	@Autowired
 	private BusinessProperties businessProperties;
 
-	public UPIPaymentTransactionBean processOrder(OrderBean orderBean) {
+	public UPIPaymentTransactionBean createOrder(OrderBean orderBean) {
 		LOGGER.debug("OrderService.processOrder() --- START");
 		LOGGER.info("OrderService.processOrder() --- orderBean: " + orderBean);	// Order [productIdQty=21=2&22=4, paymentDetails=PaymentDetails [paymentMethod=UPIPaymentMethod [upiID=acc@hdfc, paymentDescription=buy milk piuch]]]
 		Map<Integer, Integer> mapProductIdQuantity = new HashMap<>();

@@ -32,7 +32,7 @@ public class OrderController {
 	public ResponseEntity<String> processOrder(@RequestBody OrderBean orderBean) {
 		LOGGER.debug("OrderController.processOrder() --- START");
 		LOGGER.info("OrderController.processOrder() --- orderBean: " + orderBean);	// Order [productIdQty=21=2&22=4, paymentDetails=PaymentDetails [paymentMethod=UPIPaymentMethod [upiID=acc@hdfc, paymentDescription=buy milk piuch]]]
-		UPIPaymentTransactionBean upiPaymentTransactionBean = orderService.processOrder(orderBean);
+		UPIPaymentTransactionBean upiPaymentTransactionBean = orderService.createOrder(orderBean);
 		ResponseEntity<Void> responseEntity = paymentServiceClient.processUPIPayment(upiPaymentTransactionBean);
 		LOGGER.debug("OrderController.processOrder() --- END");
 		return new ResponseEntity<>("Order processed...", HttpStatus.OK);
