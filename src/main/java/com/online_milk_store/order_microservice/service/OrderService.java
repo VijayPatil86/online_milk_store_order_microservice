@@ -100,7 +100,7 @@ public class OrderService {
 				.orderNumber(orderNumber)
 				.upiPaymentMethod(businessProperties.getUpiPaymentMethodName())
 				.upiPaymentStatus(businessProperties.getUpiPaymentTransactionInitialStatus())
-				.upiId(((UPIPaymentMethodBean)(orderBean.getPaymentDetails().getPaymentMethod())).getUpiID())
+				.upiAddress(((UPIPaymentMethodBean)(orderBean.getPaymentDetails().getPaymentMethod())).getUpiAddress())
 				.upiPaymentAmount(orderPaymentAmount.get())
 				.upiPaymentRemark(((UPIPaymentMethodBean)(orderBean.getPaymentDetails().getPaymentMethod())).getPaymentDescription())
 				.build();
