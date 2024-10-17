@@ -8,11 +8,11 @@ import lombok.Setter;
 
 @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
 public class UPIPaymentMethodBean extends PaymentMethodBean {
-	private String upiID;
+	private String upiAddress;
 	private String paymentDescription;
 
 	@Override
 	public String toString() {
-		return "UPIPaymentMethod [upiID=" + upiID + ", paymentDescription=" + paymentDescription + "]";
+		return "UPIPaymentMethod [upiAddress=" + upiAddress + ", paymentDescription=" + paymentDescription + "]";
 	}
 }
